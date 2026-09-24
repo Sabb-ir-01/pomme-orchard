@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+<title>Pomme Orchard</title>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@600;800&display=swap" rel="stylesheet">
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<script src="https://sad.adsgram.ai/js/sad.min.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore-compat.js"></script>
+<style>
+:root{--leaf:#2f6f3e;--apple:#e0322b;--blush:#fbe9e4;--mist:#e6f1e8;--ink:#1d2a20;--mute:#66756a;--sheet:#fffdfb;--line:#eadfd9;--glass:rgba(255,255,255,.82)}
+@media(prefers-color-scheme:dark){:root{--ink:#eef4ee;--mute:#9aac9f;--sheet:#17211a;--line:#26342a;--blush:#2b1f1d;--mist:#0e1a12;--glass:rgba(30,42,34,.85)}.sky{opacity:.25}}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%}
+body{font:15px/1.4 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;color:var(--ink);background:var(--mist);overflow:hidden}
+h1,.num{font-family:"Bricolage Grotesque",system-ui,sans-serif;margin:0}
+#app{height:100%;max-width:520px;margin:0 auto;position:relative;display:flex;flex-direction:column}
+.sky{position:absolute;inset:0 0 auto 0;height:50%;transition:background 1s}
+.top{position:relative;padding:calc(env(safe-area-inset-top,0px) + 16px) 22px 0}
+.bal{font-size:44px;font-weight:800;letter-spacing:-1.5px;line-height:1}
+.usd{color:var(--mute);font-size:13px;margin-top:4px}
+.stage{position:relative;height:34%;min-height:150px;display:flex;justify-content:center;align-items:flex-end}
+.stage svg{height:100%}
+.stage.ready svg{animation:sway 3s ease-in-out infinite;transform-origin:50% 100%}
+@keyframes sway{50%{transform:rotate(1.6deg)}}
+@media(prefers-reduced-motion:reduce){.stage.ready svg{animation:none}}
+.sheet{position:relative;flex:1;background:var(--sheet);border-radius:28px 28px 0 0;padding:20px 22px 110px;overflow:auto;box-shadow:0 -10px 30px rgba(40,70,45,.14)}
+.view{display:none}.view.on{display:block}
+h1{font-size:26px;letter-spacing:-.6px}
+.sub,.note{color:var(--mute);font-size:13px}
+.note{margin:14px 0 0}
+.bar{height:6px;border-radius:9px;background:var(--line);margin:12px 0 8px;overflow:hidden}
+.bar i{display:block;height:100%;background:var(--apple);border-radius:9px;transition:width .6s}
+.btn{width:100%;padding:15px;border:0;border-radius:16px;font:700 16px system-ui,sans-serif;background:var(--apple);color:#fff;margin-top:16px}
+.btn.alt{background:var(--blush);color:var(--apple);margin-top:10px}
+.btn:disabled{opacity:.4}
+.mini{border:0;border-radius:99px;padding:9px 14px;font:700 13px system-ui;background:var(--leaf);color:#fff;white-space:nowrap}
+.mini:disabled{opacity:.4}
+.busy .btn,.busy .mini{pointer-events:none;opacity:.55}
+.grp{margin-top:18px;border-radius:18px;background:var(--blush);overflow:hidden}
+.row{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:14px 16px}
+.row+.row{border-top:1px solid var(--line)}
+.dots{display:flex;gap:6px;margin:14px 0 4px}
+.dots span{flex:1;text-align:center;padding:9px 0;border-radius:10px;background:var(--blush);color:var(--mute);font-weight:700;font-size:13px}
+.dots span.on{background:var(--leaf);color:#fff}
+input,select{width:100%;padding:13px 14px;border:1.5px solid var(--line);border-radius:14px;font:15px system-ui;background:var(--sheet);color:var(--ink);margin-top:6px}
+label{font-size:13px;color:var(--mute);font-weight:600;display:block;margin-top:14px}
+.tabs{position:absolute;left:18px;right:18px;bottom:calc(env(safe-area-inset-bottom,0px) + 12px);display:flex;padding:5px;border-radius:99px;background:var(--glass);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);box-shadow:0 6px 24px rgba(30,60,35,.2)}
+.tab{flex:1;border:0;background:none;padding:11px 0;border-radius:99px;font:700 14px system-ui;color:var(--mute)}
+.tab.on{background:var(--apple);color:#fff}
+#toast{position:fixed;left:50%;top:calc(env(safe-area-inset-top,0px) + 14px);transform:translate(-50%,-90px);background:#1d2a20;color:#fff;padding:11px 16px;border-radius:99px;font-size:13px;font-weight:600;transition:transform .3s;z-index:9;max-width:90%;text-align:center}
+#toast.on{transform:translate(-50%,0)}
+</style>
+</head>
+<body>
+<div id="app">
+  <div class="sky" id="sky"></div>
+  <div class="top"><div class="bal num" id="bal">0</div><div class="usd" id="usd"></div></div>
+  <div class="stage" id="stage"></div>
+  <div class="sheet">
+    <section class="view on" id="v0">
+      <h1 id="ripe"></h1>
+      <div class="bar"><i id="fill"></i></div>
+      <div class="sub" id="lvl"></div>
+      <button class="btn" id="bHarvest"></button>
+      <button class="btn alt" id="bAd"></button>
+      <div class="grp"><div class="row"><div><b id="upT"></b><div class="sub" id="upS"></div></div><button class="mini" id="bUp"></button></div></div>
+      <p class="note">Harvesting is always free. Ads are an optional boost.</p>
+    </section>
+    <section class="view" id="v1">
+      <h1>Daily apples</h1>
+      <div class="dots" id="dots"></div>
+      <div class="sub">Come back every day to grow your streak.</div>
+      <button class="btn" id="bDaily"></button>
+      <h1 style="margin-top:28px">Invite friends</h1>
+      <div class="sub" id="refSub"></div>
+      <input id="refLink" readonly>
+      <button class="btn" id="bShare">Share invite link</button>
+      <button class="btn alt" id="bCopy">Copy link</button>
+    </section>
+    <section class="view" id="v2">
+      <h1>Withdraw</h1>
+      <div class="sub" id="wSub"></div>
+      <div class="bar"><i id="wFill"></i></div>
+      <label>Network</label><select id="net"></select>
+      <label id="addrL">Wallet address</label><input id="addr" placeholder="Paste your address" autocomplete="off">
+      <button class="btn" id="bWd">Request withdrawal</button>
+      <h1 style="margin:26px 0 4px;font-size:20px">History</h1>
+      <div class="grp" id="hist"><div class="row sub">No withdrawals yet.</div></div>
+    </section>
+  </div>
+  <nav class="tabs"><button class="tab on" data-v="0">Orchard</button><button class="tab" data-v="1">Rewards</button><button class="tab" data-v="2">Wallet</button></nav>
+</div>
+<div id="toast"></div>
+<script>
+/* =========================================================
+   CONFIG — edit your settings here
+   ========================================================= */
+const CFG={
+  BOT_LINK:"https://t.me/YOUR_BOT/app",          // your mini app link, used for invites
+  SHARE_TEXT:"Grow apples in Pomme Orchard 🍎",
+  MONETAG_ZONE:"YOUR_MONETAG_ZONE_ID",           // new Monetag zone (Rewarded Interstitial)
+  ADSGRAM_BLOCK:"YOUR_ADSGRAM_BLOCK_ID",         // new Adsgram block id
+  USE_ADSGRAM:true, FALLBACK_MONETAG:true,       // Adsgram first; if it has no ad, Monetag is used
+  AD_GAP_SEC:10, MONETAG_MIN_SEC:10,             // gap between ads / minimum watch time
+  ADS_PER_DAY:8, BOOST_MIN:30,                   // ad limit per day / minutes saved per water ad
+  CYCLE_MIN:120,                                 // minutes for apples to ripen
+  LEVELS:[{y:20,c:0},{y:32,c:400},{y:50,c:1200},{y:80,c:3500},{y:125,c:9000},{y:200,c:20000}], // y = apples per harvest, c = cost
+  DAILY:[20,30,40,60,80,100,150], REF_BONUS:100,
+  APPLES_PER_USD:10000, MIN_USD:1,               // 10,000 apples = $1, minimum withdrawal $1
+  NETS:[{id:"BEP20",label:"USDT (BEP20 · BNB Chain)",re:/^0x[a-fA-F0-9]{40}$/},{id:"TRC20",label:"USDT (TRC20 · Tron)",re:/^T[1-9A-HJ-NP-Za-km-z]{33}$/}]
+};
+const FB={
+  apiKey: "AIzaSyBEfTzbuf_OIQC1NcQqmQg_0QBIpbvfgDU",
+  authDomain: "novexa-mine.firebaseapp.com",
+  projectId: "novexa-mine",
+  storageBucket: "novexa-mine.firebasestorage.app",
+  messagingSenderId: "549658268581",
+  appId: "1:549658268581:web:72e70f3ab830e65e448e4c"
+};
+if(CFG.MONETAG_ZONE.indexOf("YOUR_")!==0){const s=document.createElement("script");s.src="//libtl.com/sdk.js";s.dataset.zone=CFG.MONETAG_ZONE;s.dataset.sdk="show_"+CFG.MONETAG_ZONE;document.head.appendChild(s);}
+
+/* =========================================================
+   CORE — user data
+   ========================================================= */
+const $=id=>document.getElementById(id),now=()=>Date.now();
+const today=()=>new Date().toISOString().slice(0,10),yest=()=>new Date(now()-864e5).toISOString().slice(0,10);
+const fmt=n=>Math.floor(n).toLocaleString("en-US");
+const tg=window.Telegram&&Telegram.WebApp;if(tg){tg.ready();tg.expand();}
+const U=(tg&&tg.initDataUnsafe&&tg.initDataUnsafe.user)||{id:"guest",first_name:"Guest"},UID=String(U.id);
+firebase.initializeApp(FB);const db=firebase.firestore(),uref=db.collection("pm_users").doc(UID);
+let S=null,blocked=false,lastEnd=0,adBusy=false;
+function toast(t){const e=$("toast");e.textContent=t;e.classList.add("on");clearTimeout(toast.t);toast.t=setTimeout(()=>e.classList.remove("on"),2600);}
+function save(){const d=Object.assign({},S);delete d.refsIn;try{localStorage.setItem("pm_"+UID,JSON.stringify(d));}catch(e){}uref.set(d,{merge:true}).catch(()=>{});}
+async function load(){
+  let d=null;
+  try{const s=await uref.get();if(s.exists)d=s.data();}catch(e){try{d=JSON.parse(localStorage.getItem("pm_"+UID));}catch(_){}}
+  if(!d){
+    d={apples:0,level:1,last:now(),boost:0,streak:0,lastDaily:"",adsDate:today(),ads:0,refPaid:0,created:now(),name:U.first_name||""};
+    const sp=tg&&tg.initDataUnsafe&&tg.initDataUnsafe.start_param;
+    if(sp&&sp.indexOf("ref_")===0&&sp.slice(4)!==UID){
+      d.refBy=sp.slice(4);d.apples+=CFG.REF_BONUS;
+      db.collection("pm_users").doc(d.refBy).set({refsIn:firebase.firestore.FieldValue.increment(1)},{merge:true}).catch(()=>{});
+    }
+  }
+  S=d;const pend=(S.refsIn||0)-(S.refPaid||0);
+  if(pend>0){S.apples+=pend*CFG.REF_BONUS;S.refPaid=S.refsIn;}
+  try{lastEnd=Number(localStorage.getItem("pm_le")||0);}catch(e){}
+  save();
+}
+// one person = one account: the newest account on a device can't earn or withdraw
+async function antiMulti(){
+  try{
+    let k=localStorage.getItem("pm_dev");
+    if(!k){k=crypto.randomUUID?crypto.randomUUID():Math.random().toString(36).slice(2)+now();localStorage.setItem("pm_dev",k);}
+    S.deviceKey=k;save();
+    const q=await db.collection("pm_users").where("deviceKey","==",k).limit(10).get(),a=[];
+    q.forEach(x=>a.push({id:x.id,t:x.data().created||0}));a.sort((x,y)=>x.t-y.t);
+    if(a.findIndex(x=>x.id===UID)>=1){blocked=true;toast("This device is already linked to another account.");}
+  }catch(e){}
+}
+
+/* =========================================================
+   ADS — Adsgram first, Monetag as fallback
+   ========================================================= */
+const gapLeft=()=>Math.ceil((CFG.AD_GAP_SEC*1000-(now()-lastEnd))/1000);
+async function monetag(){
+  const f=window["show_"+CFG.MONETAG_ZONE];if(!f)throw{msg:"Ads are not ready yet. Try again in a moment."};
+  await Promise.race([Promise.resolve(f({type:"preload"})).catch(()=>{}),new Promise(r=>setTimeout(r,8000))]);
+  const t=now();await f();
+  if((now()-t)/1000<CFG.MONETAG_MIN_SEC)throw{msg:"Watch the full ad ("+CFG.MONETAG_MIN_SEC+"s) to get the reward."};
+}
+async function adsgram(){
+  if(!window.Adsgram)throw{noAd:1};
+  try{window.__ag=window.__ag||Adsgram.init({blockId:CFG.ADSGRAM_BLOCK});await window.__ag.show();}
+  catch(e){if(!e||e.state==="load"||!("state" in e))throw{noAd:1};throw{msg:"Ad skipped, so no reward this time."};}
+}
+async function showAd(){
+  if(adBusy)throw{msg:"One moment…"};
+  const g=gapLeft();if(g>0)throw{msg:"Next ad is ready in "+g+"s."};
+  adBusy=true;
+  try{
+    if(CFG.USE_ADSGRAM){try{await adsgram();return;}catch(e){if(!(e&&e.noAd&&CFG.FALLBACK_MONETAG))throw e;}}
+    await monetag();
+  }finally{adBusy=false;lastEnd=now();try{localStorage.setItem("pm_le",String(lastEnd));}catch(e){}}
+}
+async function withAd(fn){
+  if(blocked)return toast("This device is already linked to another account.");
+  if(S.adsDate!==today()){S.adsDate=today();S.ads=0;}
+  if(S.ads>=CFG.ADS_PER_DAY)return toast("Daily ad limit reached. Come back tomorrow.");
+  document.body.classList.add("busy");
+  try{await showAd();S.ads++;fn();}catch(e){toast((e&&e.msg)||"No ad available right now. Try again soon.");}
+  document.body.classList.remove("busy");
+}
+
+/* =========================================================
+   ORCHARD TAB — tree, harvest, water, upgrade
+   ========================================================= */
+const L=()=>CFG.LEVELS[S.level-1],cycle=()=>CFG.CYCLE_MIN*60000,readyAt=()=>S.last+cycle()-S.boost;
+const prog=()=>Math.max(0,Math.min(1,(now()-S.last+S.boost)/cycle()));
+const dur=ms=>{const s=Math.ceil(ms/1000),h=Math.floor(s/3600),m=Math.floor(s%3600/60);return h?h+"h "+m+"m":m+"m "+(s%60)+"s";};
+function tree(p,lvl){
+  const s=.8+Math.min(lvl,6)*.04,hue=Math.round(100*(1-p)),n=Math.min(10,2+Math.floor(p*(3+lvl))),r=6+p*4;
+  const P=[[88,96],[128,72],[162,100],[108,124],[146,132],[74,124],[124,100],[172,128],[96,62],[142,106]];
+  const ap=P.slice(0,n).map(a=>`<circle cx="${a[0]}" cy="${a[1]}" r="${r}" fill="hsl(${hue} 78% 48%)"/><path d="M${a[0]} ${a[1]-r}q2-5 6-6" stroke="#3b5a2c" stroke-width="2" fill="none"/>`).join("");
+  return `<svg viewBox="0 0 240 240"><ellipse cx="120" cy="222" rx="80" ry="10" fill="rgba(60,90,60,.18)"/><g transform="translate(120 222) scale(${s}) translate(-120 -222)"><path d="M108 222c2-34 0-58-6-84h36c-6 26-8 50-6 84z" fill="#6b4a36"/><circle cx="120" cy="92" r="60" fill="#3f8a4d"/><circle cx="78" cy="116" r="42" fill="#4a9a58"/><circle cx="164" cy="116" r="44" fill="#3a7f49"/><circle cx="120" cy="64" r="42" fill="#55a862"/>${ap}</g></svg>`;
+}
+function harvest(mult){
+  if(now()<readyAt())return;
+  const y=L().y*mult;S.apples+=y;S.last=now();S.boost=0;save();toast("+"+y+" 🍎 harvested");render();
+}
+function renderOrchard(){
+  const p=prog(),ready=p>=1;
+  $("ripe").textContent=ready?"Your apples are ripe":"Ripe in "+dur(readyAt()-now());
+  $("fill").style.width=(p*100)+"%";
+  $("lvl").textContent="Tree level "+S.level+" · "+L().y+" apples per harvest";
+  $("bHarvest").disabled=!ready;$("bHarvest").textContent=ready?"Harvest "+L().y+" 🍎":"Harvest";
+  $("bAd").textContent=ready?"Watch an ad for 2× ("+L().y*2+" 🍎)":"Watch an ad to water · "+CFG.BOOST_MIN+" min faster";
+  const nx=CFG.LEVELS[S.level];
+  $("upT").textContent=nx?"Grow to level "+(S.level+1):"Fully grown";
+  $("upS").textContent=nx?nx.y+" apples per harvest":"Your tree is at max level";
+  $("bUp").textContent=nx?fmt(nx.c)+" 🍎":"Max";$("bUp").disabled=!nx||S.apples<nx.c;
+  $("stage").innerHTML=tree(p,S.level);$("stage").className="stage"+(ready?" ready":"");
+  $("sky").style.background=`linear-gradient(hsl(${28+p*160} 85% 90%),transparent)`;
+}
+$("bHarvest").onclick=()=>harvest(1);
+$("bAd").onclick=()=>withAd(()=>{if(prog()>=1)harvest(2);else{S.boost+=CFG.BOOST_MIN*60000;save();toast("Watered · "+CFG.BOOST_MIN+" min faster");render();}});
+$("bUp").onclick=()=>{const nx=CFG.LEVELS[S.level];if(nx&&S.apples>=nx.c){S.apples-=nx.c;S.level++;save();toast("Tree grew to level "+S.level);render();}};
+
+/* =========================================================
+   REWARDS TAB — daily streak + invites
+   ========================================================= */
+function renderRewards(){
+  const done=S.lastDaily===today();let f=0;
+  if(done)f=(S.streak-1)%7+1;else if(S.lastDaily===yest())f=S.streak%7;
+  $("dots").innerHTML=CFG.DAILY.map((v,i)=>`<span class="${i<f?"on":""}">${v}</span>`).join("");
+  $("bDaily").disabled=done;$("bDaily").textContent=done?"Claimed today":"Claim "+CFG.DAILY[f]+" 🍎";
+  $("refSub").textContent="You and your friend each get "+CFG.REF_BONUS+" 🍎. Friends invited: "+(S.refPaid||0);
+  $("refLink").value=CFG.BOT_LINK+"?startapp=ref_"+UID;
+}
+$("bDaily").onclick=()=>{
+  if(S.lastDaily===today())return;
+  S.streak=S.lastDaily===yest()?S.streak+1:1;S.lastDaily=today();
+  const r=CFG.DAILY[(S.streak-1)%7];S.apples+=r;save();toast("+"+r+" 🍎 daily reward");render();
+};
+$("bShare").onclick=()=>{
+  const l=$("refLink").value,u="https://t.me/share/url?url="+encodeURIComponent(l)+"&text="+encodeURIComponent(CFG.SHARE_TEXT);
+  if(tg)tg.openTelegramLink(u);else window.open(u,"_blank");
+};
+$("bCopy").onclick=async()=>{try{await navigator.clipboard.writeText($("refLink").value);toast("Link copied");}catch(e){$("refLink").select();toast("Long-press to copy");}};
+
+/* =========================================================
+   WALLET TAB — withdraw (USDT BEP20 / TRC20)
+   ========================================================= */
+CFG.NETS.forEach(n=>{const o=document.createElement("option");o.value=n.id;o.textContent=n.label;$("net").appendChild(o);});
+const net=()=>CFG.NETS.find(n=>n.id===$("net").value)||CFG.NETS[0];
+$("net").onchange=()=>{$("addrL").textContent=net().label+" address";};$("net").onchange();
+function renderWallet(){
+  const need=CFG.MIN_USD*CFG.APPLES_PER_USD;
+  $("wSub").textContent=fmt(CFG.APPLES_PER_USD)+" 🍎 = $1 · minimum $"+CFG.MIN_USD+" · you have $"+(S.apples/CFG.APPLES_PER_USD).toFixed(2);
+  $("wFill").style.width=Math.min(100,S.apples/need*100)+"%";
+}
+async function loadHist(){
+  try{
+    const q=await db.collection("pm_withdrawals").where("uid","==",UID).limit(10).get(),a=[];
+    q.forEach(d=>a.push(d.data()));a.sort((x,y)=>(y.at&&y.at.seconds||0)-(x.at&&x.at.seconds||0));
+    if(a.length)$("hist").innerHTML=a.map(w=>`<div class="row"><div><b>$${w.usd}</b> · ${w.network}<div class="sub">${w.status}</div></div></div>`).join("");
+  }catch(e){}
+}
+$("bWd").onclick=async()=>{
+  if(blocked)return toast("This device is already linked to another account.");
+  const need=CFG.MIN_USD*CFG.APPLES_PER_USD;
+  if(S.apples<need)return toast("You need "+fmt(need)+" 🍎 to withdraw.");
+  const a=$("addr").value.trim(),n=net();
+  if(!n.re.test(a))return toast("Enter a valid "+n.id+" address.");
+  const amt=Math.floor(S.apples);
+  try{
+    await db.collection("pm_withdrawals").add({uid:UID,name:S.name,address:a,network:n.id,apples:amt,usd:+(amt/CFG.APPLES_PER_USD).toFixed(2),status:"pending",at:firebase.firestore.FieldValue.serverTimestamp()});
+    S.apples-=amt;save();$("addr").value="";toast("Withdrawal requested");render();loadHist();
+  }catch(e){toast("Could not send the request. Try again.");}
+};
+
+/* =========================================================
+   MAIN — render, tabs, start-up
+   ========================================================= */
+function render(){
+  if(!S)return;
+  $("bal").textContent=fmt(S.apples);$("usd").textContent="apples · ≈ $"+(S.apples/CFG.APPLES_PER_USD).toFixed(2);
+  renderOrchard();renderRewards();renderWallet();
+}
+document.querySelectorAll(".tab").forEach(b=>b.onclick=()=>{
+  document.querySelectorAll(".tab").forEach(x=>x.classList.toggle("on",x===b));
+  document.querySelectorAll(".view").forEach(v=>v.classList.toggle("on",v.id==="v"+b.dataset.v));
+});
+(async()=>{
+  await load();
+  await Promise.race([antiMulti(),new Promise(r=>setTimeout(r,5000))]);
+  render();loadHist();
+  setInterval(renderOrchard,1000);
+})();
+</script>
+</body>
+</html>
