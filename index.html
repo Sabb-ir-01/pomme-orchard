@@ -8,7 +8,9 @@
 <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;700&family=Sora:wght@600;800&display=swap" rel="stylesheet">
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <script src="https://sad.adsgram.ai/js/sad.min.js"></script>
+<!-- MONETAG OFF during Adsgram moderation. Re-enable later by removing this comment + setting USE_MONETAG:true
 <script src='//libtl.com/sdk.js' data-zone='11879594' data-sdk='show_11879594'></script>
+-->
 <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore-compat.js"></script>
 <style>
@@ -145,12 +147,12 @@ label{font-size:12px;color:var(--mu);font-weight:700;display:block;margin-top:14
    CONFIG — edit your settings here
    ========================================================= */
 const CFG={
-  BOT_LINK:"https://t.me/PommeOrcharBot/app",     // your mini app link (used for invites)
+  BOT_LINK:"https://t.me/PommeOrchardBot/app",     // your mini app link (used for invites)
   SHARE_TEXT:"Grow apples in Pomme Orchard",
   PROOF_LINK:"https://t.me/Zero_Invest",          // public channel with payout proofs
   MONETAG_ZONE:"11879594",                        // must match the <script> tag in <head>
   ADSGRAM_BLOCK:"49714",
-  USE_ADSGRAM:true, FALLBACK_MONETAG:true,        // optional ads: Adsgram first, Monetag if Adsgram has no ad
+  USE_ADSGRAM:true, FALLBACK_MONETAG:false, USE_MONETAG:false,        // optional ads: Adsgram first, Monetag if Adsgram has no ad
   AD_GAP_SEC:10, MONETAG_MIN_SEC:10,              // gap between ads / minimum watch time
   ADS_PER_DAY:8, BOOST_MIN:30, CYCLE_MIN:120,     // optional-ad limit per day / minutes saved per water ad / ripening time
   LEVELS:[{y:20,c:0},{y:32,c:400},{y:50,c:1200},{y:80,c:3500},{y:125,c:9000},{y:200,c:20000}], // y = apples per harvest, c = upgrade cost
@@ -238,7 +240,8 @@ async function showAd(kind){
   const g=gapLeft();if(g>0)throw{msg:"Next ad is ready in "+g+"s."};
   adBusy=true;
   try{
-    if(CFG.USE_ADSGRAM&&kind!=="task"){try{await adsgram();return;}catch(e){if(!(e&&e.noAd&&CFG.FALLBACK_MONETAG))throw e;}}
+    if(CFG.USE_ADSGRAM&&(kind!=="task"||!CFG.USE_MONETAG)){try{await adsgram();return;}catch(e){if(!(e&&e.noAd&&CFG.FALLBACK_MONETAG&&CFG.USE_MONETAG))throw e;}}
+    if(!CFG.USE_MONETAG)throw{msg:"No ad available right now. Try again soon."};
     await monetag();
   }finally{adBusy=false;lastEnd=now();try{localStorage.setItem("pm_le",String(lastEnd));}catch(e){}}
 }
