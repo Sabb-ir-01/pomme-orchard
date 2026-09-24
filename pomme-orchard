@@ -7,6 +7,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@600;800&display=swap" rel="stylesheet">
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <script src="https://sad.adsgram.ai/js/sad.min.js"></script>
+<script src='//libtl.com/sdk.js' data-zone='11879594' data-sdk='show_11879594'></script>
 <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore-compat.js"></script>
 <style>
@@ -101,8 +102,8 @@ label{font-size:13px;color:var(--mute);font-weight:600;display:block;margin-top:
 const CFG={
   BOT_LINK:"https://t.me/YOUR_BOT/app",          // your mini app link, used for invites
   SHARE_TEXT:"Grow apples in Pomme Orchard 🍎",
-  MONETAG_ZONE:"YOUR_MONETAG_ZONE_ID",           // new Monetag zone (Rewarded Interstitial)
-  ADSGRAM_BLOCK:"YOUR_ADSGRAM_BLOCK_ID",         // new Adsgram block id
+  MONETAG_ZONE:"11879594",                       // Monetag zone (must match the <script> tag in <head>)
+  ADSGRAM_BLOCK:"49714",                         // Adsgram block id
   USE_ADSGRAM:true, FALLBACK_MONETAG:true,       // Adsgram first; if it has no ad, Monetag is used
   AD_GAP_SEC:10, MONETAG_MIN_SEC:10,             // gap between ads / minimum watch time
   ADS_PER_DAY:8, BOOST_MIN:30,                   // ad limit per day / minutes saved per water ad
@@ -113,14 +114,14 @@ const CFG={
   NETS:[{id:"BEP20",label:"USDT (BEP20 · BNB Chain)",re:/^0x[a-fA-F0-9]{40}$/},{id:"TRC20",label:"USDT (TRC20 · Tron)",re:/^T[1-9A-HJ-NP-Za-km-z]{33}$/}]
 };
 const FB={
-  apiKey: "AIzaSyBEfTzbuf_OIQC1NcQqmQg_0QBIpbvfgDU",
-  authDomain: "novexa-mine.firebaseapp.com",
-  projectId: "novexa-mine",
-  storageBucket: "novexa-mine.firebasestorage.app",
-  messagingSenderId: "549658268581",
-  appId: "1:549658268581:web:72e70f3ab830e65e448e4c"
+  apiKey: "AIzaSyBEb3_43009CjZcboqaBZGLcHwIepLVriI",
+  authDomain: "pommer-orchard.firebaseapp.com",
+  projectId: "pommer-orchard",
+  storageBucket: "pommer-orchard.firebasestorage.app",
+  messagingSenderId: "416526455294",
+  appId: "1:416526455294:web:a6c002742c40351683b0af",
+  measurementId: "G-YMEPFLFDX8"
 };
-if(CFG.MONETAG_ZONE.indexOf("YOUR_")!==0){const s=document.createElement("script");s.src="//libtl.com/sdk.js";s.dataset.zone=CFG.MONETAG_ZONE;s.dataset.sdk="show_"+CFG.MONETAG_ZONE;document.head.appendChild(s);}
 
 /* =========================================================
    CORE — user data
