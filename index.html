@@ -3,96 +3,141 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+<meta name="theme-color" content="#0b1512">
 <title>Pomme Orchard</title>
-<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@600;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;700&family=Sora:wght@600;800&display=swap" rel="stylesheet">
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <script src="https://sad.adsgram.ai/js/sad.min.js"></script>
 <script src='//libtl.com/sdk.js' data-zone='11879594' data-sdk='show_11879594'></script>
 <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore-compat.js"></script>
 <style>
-:root{--leaf:#2f6f3e;--apple:#e0322b;--blush:#fbe9e4;--mist:#e6f1e8;--ink:#1d2a20;--mute:#66756a;--sheet:#fffdfb;--line:#eadfd9;--glass:rgba(255,255,255,.82)}
-@media(prefers-color-scheme:dark){:root{--ink:#eef4ee;--mute:#9aac9f;--sheet:#17211a;--line:#26342a;--blush:#2b1f1d;--mist:#0e1a12;--glass:rgba(30,42,34,.85)}.sky{opacity:.25}}
+:root{--bg:#0b1512;--card:rgba(255,255,255,.055);--bd:rgba(255,255,255,.09);--tx:#eaf3ee;--mu:#8fa79b;--ruby:linear-gradient(180deg,#ff6a6e,#d4283a);--gold:#f5c451;--mint:#6fe3a0}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-html,body{margin:0;height:100%}
-body{font:15px/1.4 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;color:var(--ink);background:var(--mist);overflow:hidden}
-h1,.num{font-family:"Bricolage Grotesque",system-ui,sans-serif;margin:0}
-#app{height:100%;max-width:520px;margin:0 auto;position:relative;display:flex;flex-direction:column}
-.sky{position:absolute;inset:0 0 auto 0;height:50%;transition:background 1s}
-.top{position:relative;padding:calc(env(safe-area-inset-top,0px) + 16px) 22px 0}
-.bal{font-size:44px;font-weight:800;letter-spacing:-1.5px;line-height:1}
-.usd{color:var(--mute);font-size:13px;margin-top:4px}
-.stage{position:relative;height:34%;min-height:150px;display:flex;justify-content:center;align-items:flex-end}
-.stage svg{height:100%}
-.stage.ready svg{animation:sway 3s ease-in-out infinite;transform-origin:50% 100%}
-@keyframes sway{50%{transform:rotate(1.6deg)}}
-@media(prefers-reduced-motion:reduce){.stage.ready svg{animation:none}}
-.sheet{position:relative;flex:1;background:var(--sheet);border-radius:28px 28px 0 0;padding:20px 22px 110px;overflow:auto;box-shadow:0 -10px 30px rgba(40,70,45,.14)}
+html,body{margin:0;height:100%;background:var(--bg)}
+body{font:500 14px/1.4 Manrope,system-ui,-apple-system,sans-serif;color:var(--tx);overflow:hidden}
+h2,.num{font-family:Sora,Manrope,system-ui,sans-serif;margin:0;font-weight:800}
+h2{font-size:22px;letter-spacing:-.4px}
+p{margin:4px 0 0;color:var(--mu)}
+#app{position:relative;height:100%;max-width:520px;margin:0 auto;overflow:hidden}
+.scene{position:absolute;inset:0 0 auto 0;height:44%}
+.hud{position:absolute;z-index:3;top:calc(env(safe-area-inset-top,0px) + 12px);left:14px;right:14px;display:flex;justify-content:space-between;gap:8px}
+.chip{display:flex;align-items:center;gap:8px;padding:5px 14px 5px 5px;border-radius:99px;background:rgba(8,20,16,.55);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border:1px solid var(--bd);font-weight:700;max-width:52%}
+.chip i{flex:none;width:28px;height:28px;border-radius:50%;background:var(--ruby);display:grid;place-items:center;font:800 13px Sora,system-ui,sans-serif;font-style:normal}
+.chip span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.chip.bal{padding:5px 14px 5px 10px;font:800 16px Sora,system-ui,sans-serif}.chip svg{width:21px;height:21px}
+.sheet{position:absolute;left:0;right:0;bottom:0;top:38%;z-index:2;border-radius:28px 28px 0 0;background:linear-gradient(#10211b,#0a1411);border-top:1px solid rgba(255,255,255,.12);box-shadow:0 -14px 40px rgba(0,0,0,.35);padding:20px 16px 112px;overflow:auto;transition:top .35s}
+#app:not(.t0) .sheet{top:13%}
 .view{display:none}.view.on{display:block}
-h1{font-size:26px;letter-spacing:-.6px}
-.sub,.note{color:var(--mute);font-size:13px}
-.note{margin:14px 0 0}
-.bar{height:6px;border-radius:9px;background:var(--line);margin:12px 0 8px;overflow:hidden}
-.bar i{display:block;height:100%;background:var(--apple);border-radius:9px;transition:width .6s}
-.btn{width:100%;padding:15px;border:0;border-radius:16px;font:700 16px system-ui,sans-serif;background:var(--apple);color:#fff;margin-top:16px}
-.btn.alt{background:var(--blush);color:var(--apple);margin-top:10px}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:20px;padding:16px;margin-top:12px}
+.harvest{display:flex;align-items:center;gap:14px}
+.ring{position:relative;flex:none;width:76px;height:76px}
+.ring svg{width:100%;height:100%}
+.rb{fill:none;stroke:rgba(255,255,255,.1);stroke-width:7}
+.rf{fill:none;stroke:#ff6a6e;stroke-width:7;stroke-linecap:round;transition:stroke-dashoffset .9s linear}
+.ring b{position:absolute;inset:0;display:grid;place-items:center;font:800 15px Sora,system-ui,sans-serif}
+.harvest h2{font-size:18px}
+.btn{width:100%;border:0;border-radius:16px;padding:15px;font:800 15px Sora,sans-serif;color:#fff;background:var(--ruby);box-shadow:inset 0 1px 0 rgba(255,255,255,.4),0 10px 22px rgba(212,40,58,.32);display:flex;gap:8px;justify-content:center;align-items:center;margin-top:12px}
+.btn.glass{background:var(--card);border:1px solid var(--bd);box-shadow:none;color:var(--tx)}
 .btn:disabled{opacity:.4}
-.mini{border:0;border-radius:99px;padding:9px 14px;font:700 13px system-ui;background:var(--leaf);color:#fff;white-space:nowrap}
-.mini:disabled{opacity:.4}
-.busy .btn,.busy .mini{pointer-events:none;opacity:.55}
-.grp{margin-top:18px;border-radius:18px;background:var(--blush);overflow:hidden}
-.row{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:14px 16px}
-.row+.row{border-top:1px solid var(--line)}
-.dots{display:flex;gap:6px;margin:14px 0 4px}
-.dots span{flex:1;text-align:center;padding:9px 0;border-radius:10px;background:var(--blush);color:var(--mute);font-weight:700;font-size:13px}
-.dots span.on{background:var(--leaf);color:#fff}
-input,select{width:100%;padding:13px 14px;border:1.5px solid var(--line);border-radius:14px;font:15px system-ui;background:var(--sheet);color:var(--ink);margin-top:6px}
-label{font-size:13px;color:var(--mute);font-weight:600;display:block;margin-top:14px}
-.tabs{position:absolute;left:18px;right:18px;bottom:calc(env(safe-area-inset-bottom,0px) + 12px);display:flex;padding:5px;border-radius:99px;background:var(--glass);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);box-shadow:0 6px 24px rgba(30,60,35,.2)}
-.tab{flex:1;border:0;background:none;padding:11px 0;border-radius:99px;font:700 14px system-ui;color:var(--mute)}
-.tab.on{background:var(--apple);color:#fff}
-#toast{position:fixed;left:50%;top:calc(env(safe-area-inset-top,0px) + 14px);transform:translate(-50%,-90px);background:#1d2a20;color:#fff;padding:11px 16px;border-radius:99px;font-size:13px;font-weight:600;transition:transform .3s;z-index:9;max-width:90%;text-align:center}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:12px}
+.stat{background:var(--card);border:1px solid var(--bd);border-radius:16px;padding:12px}
+.stat b{display:block;font:800 18px Sora,system-ui,sans-serif}.stat span{font-size:12px;color:var(--mu)}
+.bar{height:6px;border-radius:9px;background:rgba(255,255,255,.1);margin:10px 0 0;overflow:hidden}
+.bar i{display:block;height:100%;background:linear-gradient(90deg,var(--gold),#ff8a4c);border-radius:9px;transition:width .6s}
+.between{display:flex;justify-content:space-between;align-items:center;gap:12px}
+.pill{border:0;border-radius:99px;padding:10px 16px;font:800 13px Sora,system-ui,sans-serif;background:var(--gold);color:#3a2a00;white-space:nowrap}
+.pill:disabled{opacity:.35}
+.dots{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin:14px 0 4px}
+.dots div{text-align:center;font-size:11px;color:var(--mu)}
+.dots span{display:grid;place-items:center;width:34px;height:34px;margin:0 auto 4px;border-radius:50%;background:rgba(255,255,255,.07);border:1px solid var(--bd);font:800 12px Sora,system-ui,sans-serif;color:var(--mu)}
+.dots .on span{background:var(--mint);color:#06301b;border-color:transparent}
+.trow{display:flex;align-items:center;gap:12px;padding:13px 0}
+.trow+.trow{border-top:1px solid var(--bd)}
+.tic{flex:none;width:42px;height:42px;border-radius:13px;display:grid;place-items:center;background:rgba(111,227,160,.12);color:var(--mint)}
+.tt{flex:1;min-width:0}.tt b{display:block;font-weight:700}
+.rw{display:inline-block;margin-top:3px;font:800 11px Sora,system-ui,sans-serif;color:var(--gold);background:rgba(245,196,81,.12);border-radius:99px;padding:3px 9px}
+.tb{flex:none;min-width:84px;border:0;border-radius:12px;padding:10px 12px;font:800 12px Sora,system-ui,sans-serif;background:var(--gold);color:#3a2a00}
+.tb.claim{background:var(--mint);color:#06301b}
+.tb.off{background:rgba(255,255,255,.08);color:var(--mu)}
+.tb:disabled{cursor:default}
+.count{font:800 13px Sora,system-ui,sans-serif;color:var(--mu)}
+input,select{width:100%;padding:13px 14px;border:1px solid var(--bd);border-radius:14px;font:500 14px Manrope,system-ui;background:rgba(255,255,255,.06);color:var(--tx);margin-top:6px}
+select option{color:#111}
+label{font-size:12px;color:var(--mu);font-weight:700;display:block;margin-top:14px}
+.wcard{border-radius:22px;padding:18px;background:radial-gradient(120% 90% at 100% 0,#ff6a6e 0,#b81f36 45%,#4a0f22 100%);box-shadow:inset 0 1px 0 rgba(255,255,255,.3),0 14px 30px rgba(180,30,50,.3)}
+.wcard .num{font-size:34px;letter-spacing:-1px}
+.wcard small{opacity:.85}
+.row{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:12px 0}
+.row+.row{border-top:1px solid var(--bd)}
+.grp{margin-top:8px}
+.steps{margin:6px 0 0;padding-left:18px;color:var(--mu)}.steps li{margin:6px 0}
+.dock{position:absolute;z-index:5;left:14px;right:14px;bottom:calc(env(safe-area-inset-bottom,0px) + 12px);display:flex;padding:6px;border-radius:24px;background:rgba(12,26,21,.88);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);border:1px solid var(--bd);box-shadow:0 12px 30px rgba(0,0,0,.45)}
+.dk{flex:1;border:0;background:none;color:var(--mu);display:flex;flex-direction:column;align-items:center;gap:3px;padding:8px 0;border-radius:18px;font:700 11px Manrope,system-ui}
+.dk.on{background:rgba(255,106,110,.16);color:#ff8a8d}
+.busy button{pointer-events:none;opacity:.65}
+#toast{position:fixed;left:50%;top:calc(env(safe-area-inset-top,0px) + 62px);transform:translate(-50%,-120px);background:#f4f8f5;color:#0b1512;padding:11px 16px;border-radius:14px;font-size:13px;font-weight:700;transition:transform .3s;z-index:20;max-width:90%;text-align:center;box-shadow:0 10px 30px rgba(0,0,0,.4)}
 #toast.on{transform:translate(-50%,0)}
 </style>
 </head>
 <body>
-<div id="app">
-  <div class="sky" id="sky"></div>
-  <div class="top"><div class="bal num" id="bal">0</div><div class="usd" id="usd"></div></div>
-  <div class="stage" id="stage"></div>
+<div id="app" class="t0">
+  <div class="scene" id="scene"></div>
+  <div class="hud"><div class="chip"><i id="av">P</i><span id="uname"></span></div><div class="chip bal"><span id="appleIc"></span><b id="bal">0</b></div></div>
   <div class="sheet">
     <section class="view on" id="v0">
-      <h1 id="ripe"></h1>
-      <div class="bar"><i id="fill"></i></div>
-      <div class="sub" id="lvl"></div>
+      <div class="card harvest" style="margin-top:0">
+        <div class="ring"><svg viewBox="0 0 80 80"><circle class="rb" cx="40" cy="40" r="34"/><circle class="rf" id="ringF" cx="40" cy="40" r="34" stroke-dasharray="213.63" stroke-dashoffset="213.63" transform="rotate(-90 40 40)"/></svg><b id="pct">0%</b></div>
+        <div><h2 id="nextT"></h2><p id="nextS"></p></div>
+      </div>
       <button class="btn" id="bHarvest"></button>
-      <button class="btn alt" id="bAd"></button>
-      <div class="grp"><div class="row"><div><b id="upT"></b><div class="sub" id="upS"></div></div><button class="mini" id="bUp"></button></div></div>
-      <p class="note">Harvesting is always free. Ads are an optional boost.</p>
+      <button class="btn glass" id="bAd"></button>
+      <div class="stats">
+        <div class="stat"><b id="sLvl"></b><span>Tree level</span></div>
+        <div class="stat"><b id="sYield"></b><span>Per harvest</span></div>
+        <div class="stat"><b id="sAds"></b><span>Ads left today</span></div>
+      </div>
+      <div class="card">
+        <div class="between"><div><b id="upT"></b><p id="upS" style="margin:2px 0 0"></p></div><button class="pill" id="bUp"></button></div>
+        <div class="bar"><i id="upBar"></i></div>
+      </div>
+      <p style="font-size:12px;margin-top:14px">Harvesting is always free. Ads are an optional boost.</p>
     </section>
     <section class="view" id="v1">
-      <h1>Daily apples</h1>
-      <div class="dots" id="dots"></div>
-      <div class="sub">Come back every day to grow your streak.</div>
-      <button class="btn" id="bDaily"></button>
-      <h1 style="margin-top:28px">Invite friends</h1>
-      <div class="sub" id="refSub"></div>
-      <input id="refLink" readonly>
-      <button class="btn" id="bShare">Share invite link</button>
-      <button class="btn alt" id="bCopy">Copy link</button>
+      <div class="between"><h2>Earn rewards</h2><span class="count" id="tCount"></span></div>
+      <div class="card">
+        <div class="between"><b>Daily check-in</b><span class="rw" id="dRw"></span></div>
+        <div class="dots" id="dots"></div>
+        <p style="font-size:12px">Miss a day and your streak restarts.</p>
+        <button class="btn" id="bDaily"></button>
+      </div>
+      <div class="card" id="tasks" style="padding:4px 16px"></div>
     </section>
     <section class="view" id="v2">
-      <h1>Withdraw</h1>
-      <div class="sub" id="wSub"></div>
-      <div class="bar"><i id="wFill"></i></div>
-      <label>Network</label><select id="net"></select>
-      <label id="addrL">Wallet address</label><input id="addr" placeholder="Paste your address" autocomplete="off">
-      <button class="btn" id="bWd">Request withdrawal</button>
-      <h1 style="margin:26px 0 4px;font-size:20px">History</h1>
-      <div class="grp" id="hist"><div class="row sub">No withdrawals yet.</div></div>
+      <h2>Invite friends</h2>
+      <p>You and your friend each get <b id="refB"></b> apples when they join with your link.</p>
+      <div class="stats" style="grid-template-columns:1fr 1fr">
+        <div class="stat"><b id="fN">0</b><span>Friends joined</span></div>
+        <div class="stat"><b id="fE">0</b><span>Apples earned</span></div>
+      </div>
+      <div class="card"><label style="margin-top:0">Your invite link</label><input id="refLink" readonly>
+        <button class="btn" id="bShare"></button><button class="btn glass" id="bCopy"></button></div>
+      <div class="card"><b>How it works</b><ol class="steps"><li>Share your link with a friend.</li><li>They open the app and start growing.</li><li>You both receive the bonus instantly.</li></ol></div>
+    </section>
+    <section class="view" id="v3">
+      <div class="wcard"><small>Total balance</small><div class="num" id="wBal">0</div><small id="wUsd"></small></div>
+      <div class="card">
+        <div class="between"><b>Withdraw</b><span class="count" id="wSub" style="text-align:right;font-size:11px"></span></div>
+        <div class="bar"><i id="wFill"></i></div>
+        <label>Network</label><select id="net"></select>
+        <label id="addrL">Wallet address</label><input id="addr" placeholder="Paste your address" autocomplete="off">
+        <button class="btn" id="bWd">Request withdrawal</button>
+      </div>
+      <div class="card"><div class="between"><b>Recent withdrawals</b><button class="pill" id="bProof" style="background:rgba(255,255,255,.08);color:var(--tx)">Payout proofs</button></div>
+        <div class="grp" id="hist"><div class="row"><span class="count">No withdrawals yet.</span></div></div></div>
     </section>
   </div>
-  <nav class="tabs"><button class="tab on" data-v="0">Orchard</button><button class="tab" data-v="1">Rewards</button><button class="tab" data-v="2">Wallet</button></nav>
+  <nav class="dock" id="dock"></nav>
 </div>
 <div id="toast"></div>
 <script>
@@ -100,17 +145,26 @@ label{font-size:13px;color:var(--mute);font-weight:600;display:block;margin-top:
    CONFIG — edit your settings here
    ========================================================= */
 const CFG={
-  BOT_LINK:"https://t.me/YOUR_BOT/app",          // your mini app link, used for invites
-  SHARE_TEXT:"Grow apples in Pomme Orchard 🍎",
-  MONETAG_ZONE:"11879594",                       // Monetag zone (must match the <script> tag in <head>)
-  ADSGRAM_BLOCK:"49714",                         // Adsgram block id
-  USE_ADSGRAM:true, FALLBACK_MONETAG:true,       // Adsgram first; if it has no ad, Monetag is used
-  AD_GAP_SEC:10, MONETAG_MIN_SEC:10,             // gap between ads / minimum watch time
-  ADS_PER_DAY:8, BOOST_MIN:30,                   // ad limit per day / minutes saved per water ad
-  CYCLE_MIN:120,                                 // minutes for apples to ripen
-  LEVELS:[{y:20,c:0},{y:32,c:400},{y:50,c:1200},{y:80,c:3500},{y:125,c:9000},{y:200,c:20000}], // y = apples per harvest, c = cost
+  BOT_LINK:"https://t.me/PommeOrcharBot/app",     // your mini app link (used for invites)
+  SHARE_TEXT:"Grow apples in Pomme Orchard",
+  PROOF_LINK:"https://t.me/Zero_Invest",          // public channel with payout proofs
+  MONETAG_ZONE:"11879594",                        // must match the <script> tag in <head>
+  ADSGRAM_BLOCK:"49714",
+  USE_ADSGRAM:true, FALLBACK_MONETAG:true,        // optional ads: Adsgram first, Monetag if Adsgram has no ad
+  AD_GAP_SEC:10, MONETAG_MIN_SEC:10,              // gap between ads / minimum watch time
+  ADS_PER_DAY:8, BOOST_MIN:30, CYCLE_MIN:120,     // optional-ad limit per day / minutes saved per water ad / ripening time
+  LEVELS:[{y:20,c:0},{y:32,c:400},{y:50,c:1200},{y:80,c:3500},{y:125,c:9000},{y:200,c:20000}], // y = apples per harvest, c = upgrade cost
   DAILY:[20,30,40,60,80,100,150], REF_BONUS:100,
-  APPLES_PER_USD:10000, MIN_USD:1,               // 10,000 apples = $1, minimum withdrawal $1
+  APPLES_PER_USD:10000, MIN_USD:1,
+  TASK_WAIT_SEC:15,                               // seconds before a task can be claimed
+  // Tasks. Claiming a task always plays an ad (Monetag). once:1 = one time, every:N = repeats every N hours.
+  TASKS:[
+    {id:"join_zero",t:"Join our Telegram channel",link:"https://t.me/Zero_Invest",reward:150,once:1,ic:"send"},
+    {id:"react_zero",t:"React to the latest channel post",link:"https://t.me/Zero_Invest",reward:50,every:24,ic:"heart"},
+    {id:"watch_ad",t:"Watch a short video ad",kind:"ad",reward:25,every:1,ic:"play"},
+    {id:"invite",t:"Invite a friend",kind:"invite",reward:100,ic:"users"},
+    {id:"lvl3",t:"Grow your tree to level 3",lvl:3,reward:200,once:1,ic:"leaf"}
+  ],
   NETS:[{id:"BEP20",label:"USDT (BEP20 · BNB Chain)",re:/^0x[a-fA-F0-9]{40}$/},{id:"TRC20",label:"USDT (TRC20 · Tron)",re:/^T[1-9A-HJ-NP-Za-km-z]{33}$/}]
 };
 const FB={
@@ -139,14 +193,14 @@ async function load(){
   let d=null;
   try{const s=await uref.get();if(s.exists)d=s.data();}catch(e){try{d=JSON.parse(localStorage.getItem("pm_"+UID));}catch(_){}}
   if(!d){
-    d={apples:0,level:1,last:now(),boost:0,streak:0,lastDaily:"",adsDate:today(),ads:0,refPaid:0,created:now(),name:U.first_name||""};
+    d={apples:0,level:1,last:now(),boost:0,streak:0,lastDaily:"",adsDate:today(),ads:0,tasks:{},refPaid:0,created:now(),name:U.first_name||""};
     const sp=tg&&tg.initDataUnsafe&&tg.initDataUnsafe.start_param;
     if(sp&&sp.indexOf("ref_")===0&&sp.slice(4)!==UID){
       d.refBy=sp.slice(4);d.apples+=CFG.REF_BONUS;
       db.collection("pm_users").doc(d.refBy).set({refsIn:firebase.firestore.FieldValue.increment(1)},{merge:true}).catch(()=>{});
     }
   }
-  S=d;const pend=(S.refsIn||0)-(S.refPaid||0);
+  S=d;S.tasks=S.tasks||{};const pend=(S.refsIn||0)-(S.refPaid||0);
   if(pend>0){S.apples+=pend*CFG.REF_BONUS;S.refPaid=S.refsIn;}
   try{lastEnd=Number(localStorage.getItem("pm_le")||0);}catch(e){}
   save();
@@ -163,6 +217,7 @@ async function antiMulti(){
   }catch(e){}
 }
 
+
 /* =========================================================
    ADS — Adsgram first, Monetag as fallback
    ========================================================= */
@@ -178,76 +233,149 @@ async function adsgram(){
   try{window.__ag=window.__ag||Adsgram.init({blockId:CFG.ADSGRAM_BLOCK});await window.__ag.show();}
   catch(e){if(!e||e.state==="load"||!("state" in e))throw{noAd:1};throw{msg:"Ad skipped, so no reward this time."};}
 }
-async function showAd(){
+async function showAd(kind){
   if(adBusy)throw{msg:"One moment…"};
   const g=gapLeft();if(g>0)throw{msg:"Next ad is ready in "+g+"s."};
   adBusy=true;
   try{
-    if(CFG.USE_ADSGRAM){try{await adsgram();return;}catch(e){if(!(e&&e.noAd&&CFG.FALLBACK_MONETAG))throw e;}}
+    if(CFG.USE_ADSGRAM&&kind!=="task"){try{await adsgram();return;}catch(e){if(!(e&&e.noAd&&CFG.FALLBACK_MONETAG))throw e;}}
     await monetag();
   }finally{adBusy=false;lastEnd=now();try{localStorage.setItem("pm_le",String(lastEnd));}catch(e){}}
 }
-async function withAd(fn){
+async function withAd(fn,kind){
   if(blocked)return toast("This device is already linked to another account.");
   if(S.adsDate!==today()){S.adsDate=today();S.ads=0;}
-  if(S.ads>=CFG.ADS_PER_DAY)return toast("Daily ad limit reached. Come back tomorrow.");
+  if(kind!=="task"&&S.ads>=CFG.ADS_PER_DAY)return toast("Daily ad limit reached. Come back tomorrow.");
   document.body.classList.add("busy");
-  try{await showAd();S.ads++;fn();}catch(e){toast((e&&e.msg)||"No ad available right now. Try again soon.");}
+  try{await showAd(kind);if(kind!=="task")S.ads++;fn();}catch(e){toast((e&&e.msg)||"No ad available right now. Try again soon.");}
   document.body.classList.remove("busy");
 }
 
+
 /* =========================================================
-   ORCHARD TAB — tree, harvest, water, upgrade
+   ICONS + SCENE — realistic orchard that follows the real time of day
+   ========================================================= */
+const IC={leaf:"M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z|M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12",gift:"M20 12v10H4V12|M2 7h20v5H2z|M12 22V7|M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z|M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z",users:"M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2|M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8z|M22 21v-2a4 4 0 0 0-3-3.87|M16 3.13a4 4 0 0 1 0 7.75",wallet:"M19 7V4a1 1 0 0 0-1-1H5a2 2 0 0 0 0 4h15a1 1 0 0 1 1 1v4h-3a2 2 0 0 0 0 4h3a1 1 0 0 0 1-1v-2a1 1 0 0 0-1-1|M3 5v14a2 2 0 0 0 2 2h15a1 1 0 0 0 1-1v-4",send:"M22 2 11 13|M22 2l-7 20-4-9-9-4 20-7z",heart:"M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z",play:"M6 3l14 9-14 9z",drop:"M12 22a7 7 0 0 0 7-7c0-2-1-3.9-3-5.5s-3.5-4-4-6.5c-.5 2.5-2 4.9-4 6.5C6 11.1 5 13 5 15a7 7 0 0 0 7 7z",check:"M20 6 9 17l-5-5",lock:"M7 11V7a5 5 0 0 1 10 0v4|M5 11h14v10H5z",share:"M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8|M16 6l-4-4-4 4|M12 2v13",copy:"M9 9h11v11H9z|M5 15V5a1 1 0 0 1 1-1h10",up:"M12 19V5|M5 12l7-7 7 7"};
+const ic=(n,z)=>`<svg width="${z||20}" height="${z||20}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${IC[n].split("|").map(d=>`<path d="${d}"/>`).join("")}</svg>`;
+const APPLE='<svg viewBox="0 0 24 24"><path fill="#ff5a5f" d="M12 7c-1.5-1.5-4-1.5-5.5 0C4.5 9 5 13 7 16c1 1.5 2.3 3 3.5 3 .8 0 1-.4 1.5-.4s.7.4 1.5.4c1.2 0 2.5-1.5 3.5-3 2-3 2.5-7 .5-9-1.5-1.5-4-1.5-5.5 0z"/><path fill="#6fe3a0" d="M12 6c0-2 1-3.5 3-4 0 2-1 3.5-3 4z"/></svg>';
+function rng(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;};}
+const PH=()=>{const h=new Date().getHours();return h>=5&&h<7?"dawn":h>=7&&h<17?"day":h>=17&&h<19?"dusk":"night";};
+const SKY={dawn:["#f4a18a","#fde6c6",.08],day:["#6fbdf0","#dcf3e8",0],dusk:["#4d4590","#f3a37b",.16],night:["#08122b","#1c3d4d",.42]};
+let sceneKey="",APPLEPOS=[];
+function buildScene(){
+  const ph=PH(),sk=SKY[ph],R=rng(7),s=.8+Math.min(S.level,6)*.035;let g="";
+  if(ph==="night")for(let i=0;i<30;i++)g+=`<circle cx="${(R()*360).toFixed(0)}" cy="${(R()*130).toFixed(0)}" r="${(.5+R()*1.1).toFixed(1)}" fill="#fff" opacity="${(.4+R()*.6).toFixed(2)}"/>`;
+  g+=ph==="night"?`<circle cx="285" cy="62" r="20" fill="#f1f5ff"/><circle cx="293" cy="57" r="18" fill="${sk[0]}"/>`:`<circle cx="${ph==="dusk"?70:ph==="dawn"?300:280}" cy="${ph==="day"?58:132}" r="${ph==="day"?22:28}" fill="${ph==="day"?"#fff4b8":"#ffd08a"}"/>`;
+  g+=`<path d="M0 205C60 170 120 190 180 178S320 165 360 190V300H0Z" fill="#5fa872"/><path d="M0 232C80 208 160 226 240 214S330 214 360 222V300H0Z" fill="#45905a"/><rect y="252" width="360" height="48" fill="url(#gr)"/>`;
+  g+=`<ellipse cx="180" cy="268" rx="92" ry="9" fill="#000" opacity=".22"/><g transform="translate(180 268) scale(${s}) translate(-180 -268)">`;
+  g+=`<g stroke="#5b3d29" stroke-linecap="round" fill="none"><path d="M178 190C158 172 138 152 116 124" stroke-width="10"/><path d="M190 184C212 170 234 150 254 122" stroke-width="10"/><path d="M184 168C182 146 186 126 182 100" stroke-width="9"/></g>`;
+  g+=`<path d="M152 270C164 254 168 236 166 210C165 192 162 176 160 150L202 150C198 172 194 190 194 212C193 236 198 254 212 270Z" fill="url(#wd)"/><g stroke="#2e1d11" stroke-width="1.6" fill="none" opacity=".45" stroke-linecap="round"><path d="M172 262C174 236 172 208 170 176"/><path d="M184 262C185 232 183 206 184 178"/><path d="M196 262C193 240 194 214 192 186"/></g>`;
+  const cols=["url(#f1)","url(#f2)","url(#f3)"],lc=["#3f8f4d","#58a95a","#2f7a41","#78c26a"];
+  for(let i=0;i<30;i++){const a=R()*6.283,d=Math.sqrt(R()),x=180+Math.cos(a)*d*112,y=104+Math.sin(a)*d*68,rx=24+R()*20;g+=`<ellipse cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" rx="${rx.toFixed(1)}" ry="${(rx*.8).toFixed(1)}" fill="${cols[i%3]}"/>`;}
+  for(let i=0;i<150;i++){const a=R()*6.283,d=Math.sqrt(R()),x=180+Math.cos(a)*d*128,y=104+Math.sin(a)*d*78;g+=`<ellipse cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" rx="${(4+R()*4).toFixed(1)}" ry="${(2.2+R()*2).toFixed(1)}" transform="rotate(${(R()*180).toFixed(0)} ${x.toFixed(1)} ${y.toFixed(1)})" fill="${lc[i%4]}" opacity=".85"/>`;}
+  g+=`<ellipse cx="140" cy="70" rx="46" ry="26" fill="#fff" opacity=".07"/>`;
+  APPLEPOS=[];for(let i=0;i<14;i++){const a=R()*6.283,d=Math.sqrt(R());APPLEPOS.push([+(180+Math.cos(a)*d*100).toFixed(0),+(112+Math.sin(a)*d*54).toFixed(0)]);}
+  g+=`<g id="apples"></g></g><g id="fallen"></g><rect width="360" height="300" fill="#071127" opacity="${sk[2]}"/>`;
+  return `<svg viewBox="0 0 360 300" preserveAspectRatio="xMidYMax slice" width="100%" height="100%"><defs><linearGradient id="sk" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${sk[0]}"/><stop offset="1" stop-color="${sk[1]}"/></linearGradient><linearGradient id="wd"><stop offset="0" stop-color="#3f2a1b"/><stop offset=".45" stop-color="#7a5537"/><stop offset="1" stop-color="#3f2a1b"/></linearGradient><linearGradient id="gr" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#3f8a52"/><stop offset="1" stop-color="#2a6b3d"/></linearGradient><radialGradient id="f1" cx=".35" cy=".3" r=".8"><stop offset="0" stop-color="#6cc06a"/><stop offset="1" stop-color="#2a6b3a"/></radialGradient><radialGradient id="f2" cx=".35" cy=".3" r=".8"><stop offset="0" stop-color="#4fa85a"/><stop offset="1" stop-color="#24603a"/></radialGradient><radialGradient id="f3" cx=".35" cy=".3" r=".8"><stop offset="0" stop-color="#7acb72"/><stop offset="1" stop-color="#357f45"/></radialGradient><radialGradient id="as" cx=".35" cy=".3" r=".8"><stop offset="0" stop-color="#fff" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".38"/></radialGradient></defs><rect width="360" height="300" fill="url(#sk)"/>${g}</svg>`;
+}
+let applesSig="";
+function apple(x,y,r,hue,l){return `<g transform="translate(${x} ${y})"><circle r="${r}" fill="hsl(${hue} 72% ${l}%)"/><circle r="${r}" fill="url(#as)"/><ellipse cx="${-r*.35}" cy="${-r*.38}" rx="${r*.3}" ry="${r*.19}" fill="#fff" opacity=".4"/><path d="M0 ${-r}q1-4 3-5" stroke="#4a3320" stroke-width="1.4" fill="none"/><ellipse cx="4.5" cy="${-r-2.5}" rx="3.4" ry="1.7" fill="#5aa03f" transform="rotate(-25 4.5 ${-r-2.5})"/></g>`;}
+function drawApples(p,ready){
+  const n=Math.min(APPLEPOS.length,1+Math.floor(p*(5+S.level*1.5))),hue=Math.round(98*(1-p)),sig=n+"|"+hue+"|"+ready;
+  if(sig===applesSig||!$("apples"))return;applesSig=sig;
+  $("apples").innerHTML=APPLEPOS.slice(0,n).map(a=>apple(a[0],a[1],8.5,hue,46)).join("");
+  $("fallen").innerHTML=ready?[[112,277],[258,281],[206,287]].map(a=>apple(a[0],a[1],6,2,44)).join(""):"";
+}
+
+/* =========================================================
+   ORCHARD TAB — harvest, water, upgrade
    ========================================================= */
 const L=()=>CFG.LEVELS[S.level-1],cycle=()=>CFG.CYCLE_MIN*60000,readyAt=()=>S.last+cycle()-S.boost;
 const prog=()=>Math.max(0,Math.min(1,(now()-S.last+S.boost)/cycle()));
 const dur=ms=>{const s=Math.ceil(ms/1000),h=Math.floor(s/3600),m=Math.floor(s%3600/60);return h?h+"h "+m+"m":m+"m "+(s%60)+"s";};
-function tree(p,lvl){
-  const s=.8+Math.min(lvl,6)*.04,hue=Math.round(100*(1-p)),n=Math.min(10,2+Math.floor(p*(3+lvl))),r=6+p*4;
-  const P=[[88,96],[128,72],[162,100],[108,124],[146,132],[74,124],[124,100],[172,128],[96,62],[142,106]];
-  const ap=P.slice(0,n).map(a=>`<circle cx="${a[0]}" cy="${a[1]}" r="${r}" fill="hsl(${hue} 78% 48%)"/><path d="M${a[0]} ${a[1]-r}q2-5 6-6" stroke="#3b5a2c" stroke-width="2" fill="none"/>`).join("");
-  return `<svg viewBox="0 0 240 240"><ellipse cx="120" cy="222" rx="80" ry="10" fill="rgba(60,90,60,.18)"/><g transform="translate(120 222) scale(${s}) translate(-120 -222)"><path d="M108 222c2-34 0-58-6-84h36c-6 26-8 50-6 84z" fill="#6b4a36"/><circle cx="120" cy="92" r="60" fill="#3f8a4d"/><circle cx="78" cy="116" r="42" fill="#4a9a58"/><circle cx="164" cy="116" r="44" fill="#3a7f49"/><circle cx="120" cy="64" r="42" fill="#55a862"/>${ap}</g></svg>`;
-}
+const adsLeft=()=>{if(S.adsDate!==today()){S.adsDate=today();S.ads=0;}return Math.max(0,CFG.ADS_PER_DAY-S.ads);};
 function harvest(mult){
   if(now()<readyAt())return;
-  const y=L().y*mult;S.apples+=y;S.last=now();S.boost=0;save();toast("+"+y+" 🍎 harvested");render();
+  const y=L().y*mult;S.apples+=y;S.last=now();S.boost=0;save();toast("+"+y+" apples harvested");render();
 }
 function renderOrchard(){
-  const p=prog(),ready=p>=1;
-  $("ripe").textContent=ready?"Your apples are ripe":"Ripe in "+dur(readyAt()-now());
-  $("fill").style.width=(p*100)+"%";
-  $("lvl").textContent="Tree level "+S.level+" · "+L().y+" apples per harvest";
-  $("bHarvest").disabled=!ready;$("bHarvest").textContent=ready?"Harvest "+L().y+" 🍎":"Harvest";
-  $("bAd").textContent=ready?"Watch an ad for 2× ("+L().y*2+" 🍎)":"Watch an ad to water · "+CFG.BOOST_MIN+" min faster";
+  const p=prog(),ready=p>=1,k=PH()+S.level;
+  if(k!==sceneKey){sceneKey=k;applesSig="";$("scene").innerHTML=buildScene();}
+  drawApples(p,ready);
+  $("ringF").style.strokeDashoffset=213.63*(1-p);$("pct").textContent=Math.floor(p*100)+"%";
+  $("nextT").textContent=ready?"Apples are ripe":"Ripe in "+dur(readyAt()-now());
+  $("nextS").textContent="Level "+S.level+" tree · "+L().y+" apples";
+  $("bHarvest").disabled=!ready;$("bHarvest").textContent=ready?"Harvest "+L().y+" apples":"Harvest";
+  $("bAd").innerHTML=ic(ready?"play":"drop",18)+(ready?"Watch an ad for 2× harvest":"Water with an ad · −"+CFG.BOOST_MIN+" min");
+  $("sLvl").textContent=S.level;$("sYield").textContent=L().y;$("sAds").textContent=adsLeft();
   const nx=CFG.LEVELS[S.level];
   $("upT").textContent=nx?"Grow to level "+(S.level+1):"Fully grown";
   $("upS").textContent=nx?nx.y+" apples per harvest":"Your tree is at max level";
-  $("bUp").textContent=nx?fmt(nx.c)+" 🍎":"Max";$("bUp").disabled=!nx||S.apples<nx.c;
-  $("stage").innerHTML=tree(p,S.level);$("stage").className="stage"+(ready?" ready":"");
-  $("sky").style.background=`linear-gradient(hsl(${28+p*160} 85% 90%),transparent)`;
+  $("bUp").textContent=nx?fmt(nx.c)+" apples":"Max";$("bUp").disabled=!nx||S.apples<nx.c;
+  $("upBar").style.width=(nx?Math.min(100,S.apples/nx.c*100):100)+"%";
 }
 $("bHarvest").onclick=()=>harvest(1);
-$("bAd").onclick=()=>withAd(()=>{if(prog()>=1)harvest(2);else{S.boost+=CFG.BOOST_MIN*60000;save();toast("Watered · "+CFG.BOOST_MIN+" min faster");render();}});
-$("bUp").onclick=()=>{const nx=CFG.LEVELS[S.level];if(nx&&S.apples>=nx.c){S.apples-=nx.c;S.level++;save();toast("Tree grew to level "+S.level);render();}};
+$("bAd").onclick=()=>withAd(()=>{if(prog()>=1)harvest(2);else{S.boost+=CFG.BOOST_MIN*60000;save();toast("Watered · "+CFG.BOOST_MIN+" min faster");render();}},"opt");
+$("bUp").onclick=()=>{const nx=CFG.LEVELS[S.level];if(nx&&S.apples>=nx.c){S.apples-=nx.c;S.level++;save();toast("Your tree grew to level "+S.level);render();}};
 
 /* =========================================================
-   REWARDS TAB — daily streak + invites
+   TASKS TAB — daily check-in + tasks (claiming a task plays an ad)
    ========================================================= */
-function renderRewards(){
+const armed={};let tasksSig="";
+function taskState(t){
+  const last=(S.tasks||{})[t.id]||0;
+  if(t.kind==="invite")return"invite";
+  if(t.once&&last)return"done";
+  if(t.every&&last&&now()<last+t.every*36e5)return"cool";
+  if(t.lvl&&S.level<t.lvl)return"lock";
+  if(t.kind==="ad")return"ad";
+  if(t.lvl)return"claim";
+  const a=armed[t.id];return!a?"go":now()<a?"wait":"claim";
+}
+function renderTasks(){
   const done=S.lastDaily===today();let f=0;
   if(done)f=(S.streak-1)%7+1;else if(S.lastDaily===yest())f=S.streak%7;
-  $("dots").innerHTML=CFG.DAILY.map((v,i)=>`<span class="${i<f?"on":""}">${v}</span>`).join("");
-  $("bDaily").disabled=done;$("bDaily").textContent=done?"Claimed today":"Claim "+CFG.DAILY[f]+" 🍎";
-  $("refSub").textContent="You and your friend each get "+CFG.REF_BONUS+" 🍎. Friends invited: "+(S.refPaid||0);
-  $("refLink").value=CFG.BOT_LINK+"?startapp=ref_"+UID;
+  $("dots").innerHTML=CFG.DAILY.map((v,i)=>`<div class="${i<f?"on":""}"><span>${i<f?ic("check",16):i+1}</span>+${v}</div>`).join("");
+  $("dRw").textContent=done?"Done today":"+"+CFG.DAILY[f]+" apples";
+  $("bDaily").disabled=done;$("bDaily").textContent=done?"Come back tomorrow":"Check in";
+  let cnt=done?1:0,tot=1;
+  const rows=CFG.TASKS.map(t=>{
+    const st=taskState(t);
+    if(t.kind!=="invite"){tot++;if(st==="done"||st==="cool")cnt++;}
+    const lab={go:"Start",wait:Math.max(1,Math.ceil((armed[t.id]-now())/1000))+"s",claim:"Claim",done:"Done",cool:"Done",ad:"Watch",invite:"Invite",lock:"Level "+t.lvl}[st];
+    const cls=st==="claim"?"claim":(st==="wait"||st==="done"||st==="cool"||st==="lock")?"off":"";
+    const rw=t.kind==="invite"?"+"+CFG.REF_BONUS+" each":"+"+t.reward;
+    return `<div class="trow"><span class="tic">${ic(t.ic,20)}</span><div class="tt"><b>${t.t}</b><span class="rw">${rw}</span></div><button class="tb ${cls}" data-t="${t.id}" data-a="${st}" ${cls==="off"?"disabled":""}>${lab}</button></div>`;
+  }).join("");
+  $("tCount").textContent=cnt+" of "+tot+" done";
+  if(rows!==tasksSig){tasksSig=rows;$("tasks").innerHTML=rows;}
 }
+$("tasks").onclick=e=>{
+  const b=e.target.closest("button[data-t]");if(!b||b.disabled)return;
+  const t=CFG.TASKS.find(x=>x.id===b.dataset.t),a=b.dataset.a;
+  const pay=()=>{S.apples+=t.reward;S.tasks[t.id]=now();delete armed[t.id];save();toast("+"+t.reward+" apples earned");render();};
+  if(a==="go"){armed[t.id]=now()+CFG.TASK_WAIT_SEC*1000;if(tg)tg.openTelegramLink(t.link);else window.open(t.link,"_blank");renderTasks();}
+  else if(a==="claim")withAd(pay,"task");
+  else if(a==="ad")withAd(pay,"opt");
+  else if(a==="invite")goTab(2);
+};
 $("bDaily").onclick=()=>{
   if(S.lastDaily===today())return;
   S.streak=S.lastDaily===yest()?S.streak+1:1;S.lastDaily=today();
-  const r=CFG.DAILY[(S.streak-1)%7];S.apples+=r;save();toast("+"+r+" 🍎 daily reward");render();
+  const r=CFG.DAILY[(S.streak-1)%7];S.apples+=r;save();toast("+"+r+" apples · daily check-in");render();
 };
+
+/* =========================================================
+   FRIENDS TAB — invite link
+   ========================================================= */
+function renderFriends(){
+  const n=S.refPaid||0;
+  $("refB").textContent=CFG.REF_BONUS;$("fN").textContent=n;$("fE").textContent=fmt(n*CFG.REF_BONUS);
+  $("refLink").value=CFG.BOT_LINK+"?startapp=ref_"+UID;
+}
+$("bShare").innerHTML=ic("share",18)+"Share invite link";$("bCopy").innerHTML=ic("copy",18)+"Copy link";
 $("bShare").onclick=()=>{
-  const l=$("refLink").value,u="https://t.me/share/url?url="+encodeURIComponent(l)+"&text="+encodeURIComponent(CFG.SHARE_TEXT);
+  const u="https://t.me/share/url?url="+encodeURIComponent($("refLink").value)+"&text="+encodeURIComponent(CFG.SHARE_TEXT);
   if(tg)tg.openTelegramLink(u);else window.open(u,"_blank");
 };
 $("bCopy").onclick=async()=>{try{await navigator.clipboard.writeText($("refLink").value);toast("Link copied");}catch(e){$("refLink").select();toast("Long-press to copy");}};
@@ -260,20 +388,20 @@ const net=()=>CFG.NETS.find(n=>n.id===$("net").value)||CFG.NETS[0];
 $("net").onchange=()=>{$("addrL").textContent=net().label+" address";};$("net").onchange();
 function renderWallet(){
   const need=CFG.MIN_USD*CFG.APPLES_PER_USD;
-  $("wSub").textContent=fmt(CFG.APPLES_PER_USD)+" 🍎 = $1 · minimum $"+CFG.MIN_USD+" · you have $"+(S.apples/CFG.APPLES_PER_USD).toFixed(2);
+  $("wSub").textContent=fmt(CFG.APPLES_PER_USD)+" apples = $1 · minimum $"+CFG.MIN_USD+" · you have $"+(S.apples/CFG.APPLES_PER_USD).toFixed(2);
   $("wFill").style.width=Math.min(100,S.apples/need*100)+"%";
 }
 async function loadHist(){
   try{
     const q=await db.collection("pm_withdrawals").where("uid","==",UID).limit(10).get(),a=[];
     q.forEach(d=>a.push(d.data()));a.sort((x,y)=>(y.at&&y.at.seconds||0)-(x.at&&x.at.seconds||0));
-    if(a.length)$("hist").innerHTML=a.map(w=>`<div class="row"><div><b>$${w.usd}</b> · ${w.network}<div class="sub">${w.status}</div></div></div>`).join("");
+    if(a.length)$("hist").innerHTML=a.map(w=>`<div class="row"><div><b>$${w.usd}</b> · ${w.network}<div class="count">${w.status}</div></div></div>`).join("");
   }catch(e){}
 }
 $("bWd").onclick=async()=>{
   if(blocked)return toast("This device is already linked to another account.");
   const need=CFG.MIN_USD*CFG.APPLES_PER_USD;
-  if(S.apples<need)return toast("You need "+fmt(need)+" 🍎 to withdraw.");
+  if(S.apples<need)return toast("You need "+fmt(need)+" apples to withdraw.");
   const a=$("addr").value.trim(),n=net();
   if(!n.re.test(a))return toast("Enter a valid "+n.id+" address.");
   const amt=Math.floor(S.apples);
@@ -283,23 +411,34 @@ $("bWd").onclick=async()=>{
   }catch(e){toast("Could not send the request. Try again.");}
 };
 
+
+$("bProof").onclick=()=>{if(tg)tg.openTelegramLink(CFG.PROOF_LINK);else window.open(CFG.PROOF_LINK,"_blank");};
+
 /* =========================================================
    MAIN — render, tabs, start-up
    ========================================================= */
+const TABS=[["leaf","Orchard"],["gift","Tasks"],["users","Friends"],["wallet","Wallet"]];
+$("dock").innerHTML=TABS.map((t,i)=>`<button class="dk${i?"":" on"}" data-v="${i}">${ic(t[0],22)}${t[1]}</button>`).join("");
+function goTab(i){
+  document.querySelectorAll(".dk").forEach(x=>x.classList.toggle("on",+x.dataset.v===i));
+  document.querySelectorAll(".view").forEach(v=>v.classList.toggle("on",v.id==="v"+i));
+  $("app").className="t"+i;
+  document.querySelector(".sheet").scrollTop=0;
+}
+document.querySelectorAll(".dk").forEach(b=>b.onclick=()=>goTab(+b.dataset.v));
+$("appleIc").innerHTML=APPLE;
 function render(){
   if(!S)return;
-  $("bal").textContent=fmt(S.apples);$("usd").textContent="apples · ≈ $"+(S.apples/CFG.APPLES_PER_USD).toFixed(2);
-  renderOrchard();renderRewards();renderWallet();
+  $("uname").textContent=U.first_name||"Guest";$("av").textContent=(U.first_name||"G")[0].toUpperCase();
+  $("bal").textContent=fmt(S.apples);
+  $("wBal").textContent=fmt(S.apples)+" apples";$("wUsd").textContent="≈ $"+(S.apples/CFG.APPLES_PER_USD).toFixed(2)+" USDT";
+  renderOrchard();renderTasks();renderFriends();renderWallet();
 }
-document.querySelectorAll(".tab").forEach(b=>b.onclick=()=>{
-  document.querySelectorAll(".tab").forEach(x=>x.classList.toggle("on",x===b));
-  document.querySelectorAll(".view").forEach(v=>v.classList.toggle("on",v.id==="v"+b.dataset.v));
-});
 (async()=>{
   await load();
   await Promise.race([antiMulti(),new Promise(r=>setTimeout(r,5000))]);
   render();loadHist();
-  setInterval(renderOrchard,1000);
+  setInterval(()=>{renderOrchard();renderTasks();},1000);
 })();
 </script>
 </body>
